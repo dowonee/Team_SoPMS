@@ -102,3 +102,32 @@
 
 ><a href="https://imgbb.com/"><img src="https://i.ibb.co/SmcgDDq/14.png" alt="14" border="0"></a>
 
+
+---
+</br>
+
+
+## ⚡ TEST
+
+### * 단위테스트
+
+><a href="https://ibb.co/19XmVVT"><img src="https://i.ibb.co/vJdj55k/15.png" alt="15" border="0"></a>
+
+### * 통합테스트
+
+><a href="https://ibb.co/2Njh00J"><img src="https://i.ibb.co/SrKyDDS/16.png" alt="16" border="0"></a>
+
+
+
+---
+</br>
+
+
+
+## ⚡ ISSUES
+<details markdown="1">
+<summary>펼치기</summary>
+
+<a href="https://ibb.co/F0LNmL4"><img src="https://i.ibb.co/Br5dc52/17.png" alt="17" border="0"></a>
+
+</details>
