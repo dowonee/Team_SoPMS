@@ -74,13 +74,108 @@
  
 ><a href="https://imgbb.com/"><img src="https://i.ibb.co/NNYgRQB/7.png" alt="7" border="0"></a>
 
+```
+	@RequestMapping(params = "method=updateform")
+	public String projectUpdateForm(@RequestParam("pcode") int pcode,HttpServletRequest request, Model d) {
+		HttpSession session = request.getSession();
+		User user = (User) session.getAttribute("user");
+		if (!user.getRank().equals("부장")) {
+			d.addAttribute("msg", "접근권한이 없습니다.");
+			return "forward:/dashboard.do";
+		} else {
+			d.addAttribute("project", service.getProject(pcode));
+			return "WEB-INF\\view\\project_Update.jsp";
+		}
+	}
+```
+```
+	$("#regBtn").click(function() {
+		if (insert01.pname.value == "" || insert01.dept.value == "" ||insert01.startdate.value == "" || insert01.enddate.value == ""|| insert01.teamnum.value == "") {
+			alert("필수입력란이 비었습니다. 확인해주세요.");
+			return false;
+		}
+		var startDate = $("input[name=startdate]").val().split("-");
+		var endDate  = $("input[name=enddate]").val().split("-");
+		var sDate    = new Date(startDate[0], startDate[1], startDate[2]).valueOf();
+		var eDate    = new Date(endDate[0], endDate[1], endDate[2]).valueOf();
+		if ( sDate > eDate ) {
+			alert("시작일과 종료일을 확인해주세요.");
+			return false;			
+		}
+		$("#insert01").submit();
+		alert("프로젝트를 등록했습니다.");
+	});
+```
+
 * 프로젝트 상세
 
 ><a href="https://imgbb.com/"><img src="https://i.ibb.co/QJg3bVF/8.png" alt="8" border="0"></a>
+```
+	function getProjectData() {
+		$.ajax({
+			type : 'POST',
+			url : '${path}/projectSum.do',
+			data : 'pcode=${param.pcode}',
+			dataType : 'json',
+			success : function(data) {
+				printData(data);
+			},
+			error : function(err) {
+				alert(err);
+			}
+		});
+	}
+```
+```
+	function printData(data){
+		$('#pj_name').text(data.pname);
+		$('#pj_pm').text(data.pmName);
+		$('#pj_start_date').text(data.startDate);
+		$('#pj_end_date').text(data.endDate);
+		$('#pj_max_headCnt').text(data.teamNum);
+		$('#pj_status').text(data.status);
+		$('#pj_explanation').html(data.explanation);
+		//부서 목록 출력
+		let deptHTML = '';
+		data.dept.forEach(function(element,index,array){
+			if(index!=0) deptHTML+='<br>';
+			deptHTML+=element;
+		});
+		if($('#pj_pm').text()=='${user.name}') {
+			$("#btns").css('display','block');
+		}
+		$('#pj_dept').html(deptHTML);
+	}
+```
+
 
 * 공지사항 수정
 
 ><a href="https://imgbb.com/"><img src="https://i.ibb.co/0Gx9HQ6/9.png" alt="9" border="0"></a>
+```
+<!-- Modal -->
+<div class="modal fade" id="exampleModalCenter">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">프로젝트 수정</h5>
+				<button type="button" class="close" data-dismiss="modal">
+					<span>&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p>프로젝트를 수정하시겠습니까?</p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" id="uptBtn_modal" name="uptbtn"
+					class="btn btn-primary">확인</button>
+				<button type="button" id="canBtn_modal" class="btn btn-light"
+					data-dismiss="modal">취소</button>
+			</div>
+		</div>
+	</div>
+</div>
+```
 
 * 프로젝트 정보 권한 별 버튼
 
@@ -89,18 +184,108 @@
 * 공지사항 등록 (파일 업로드)
 
 ><a href="https://imgbb.com/"><img src="https://i.ibb.co/T815crZ/11.png" alt="11" border="0"></a>
-
+```
+	@RequestMapping(params = "method=insert")
+	public String boardInsert(HttpServletRequest request, Board board) {
+		HttpSession session = request.getSession();
+		User user = (User) session.getAttribute("user");
+		board.setId(user.getId());
+		service.insertBoard(board);
+		return "redirect:/board.do?method=list";
+	}
+```
+```
+<div class="custom-file">
+ <input type="file" name="report" class="custom-file-input"
+ id="file01"> <label class="custom-file-label"
+ for="file01"> 파일을 선택하세요. </label>
+</div>
+```
 * 공지사항 권한 별 버튼
 
 ><a href="https://imgbb.com/"><img src="https://i.ibb.co/XzYydcy/12.png" alt="12" border="0"></a>
+```
+	<c:if test="${user.id == board.id}">
+	<button id="upt" class="btn btn-primary" type="button">수정</button>
+	<button id="del" data-toggle="modal"
+		data-target="#exampleModalCenter2"
+		class="btn btn-danger btn-lg btn-block center-block"
+		type="button">삭제</button>
+	</c:if>
+```
 
 * 게시판 목록
 
 ><a href="https://imgbb.com/"><img src="https://i.ibb.co/R2SLmvn/13.png" alt="13" border="0"></a>
+```
+	$("#paging").children("li").click(function() {
+		var id = $(this).attr('id');
+		if(id=='next'){
+			if($('.active').next().attr('id')==id){
+				alert("마지막 페이지 입니다");
+				return;
+			}else{
+				$('.active').next().attr('class', 'page-item active');
+				$('.active').first().attr('class', 'page-item');
+			}
+		}else if(id=='pre'){
+			if($('.active').prev().attr('id')==id){
+				alert("첫 페이지 입니다");
+				return;
+			}else{
+				$('.active').prev().attr('class', 'page-item active');
+				$('.active').last().attr('class', 'page-item');
+			}
+		}else{
+			$("#paging").children("li").attr('class', 'page-item');
+			$(this).attr('class', 'page-item active');
+		}
+	});
+```
+```
+<ul class="pagination justify-content-center" id="paging">
+<li class="page-item" id="pre"><a class="page-link"
+	href="javascript:goBlock(${boardSch.startBlock-1})">Pre</a></li>
+<c:forEach var="cnt" begin="${boardSch.startBlock}"
+	end="${boardSch.endBlock}">
+	<li class="page-item ${boardSch.curPage==cnt?'active':''}"><a
+		class="page-link" href="javascript:goPage(${cnt})">${cnt}</a></li>
+</c:forEach>
+<li class="page-item" id="next"><a class="page-link"
+	href="javascript:goBlock(${boardSch.curPage+1})"> Next </a></li>
+</ul>
+```
 
 * 공지사항 상세보기 (파일 다운로드)
 
 ><a href="https://imgbb.com/"><img src="https://i.ibb.co/SmcgDDq/14.png" alt="14" border="0"></a>
+```
+	@Value("${upload}")
+	private String upload;
+	@Override
+	protected void renderMergedOutputModel(
+			Map<String, Object> model, 
+			HttpServletRequest request, HttpServletResponse response)
+			throws Exception {
+		// TODO Auto-generated method stub
+		String bfname = (String)model.get("boardFile");
+		File file = new File(upload+bfname);
+		System.out.println("전체파일명:"+file.getPath());
+		System.out.println("파일명:"+file.getName());
+		System.out.println("파일길이:"+(int)file.length());
+		response.setContentType("application/download; charset=UTF-8");
+		response.setContentLength((int)file.length());
+		bfname = URLEncoder.encode(bfname,"utf-8").replaceAll("\\+", " ");
+		response.setHeader("Content-Disposition",
+				"attachment;filename=\""+bfname+"\"");
+		response.setHeader("Content-Transfer-Encoding", "binary");
+		FileInputStream fis = new FileInputStream(file);
+		OutputStream out = response.getOutputStream();
+		FileCopyUtils.copy(fis, out);
+		out.flush();
+	}
+}
+```
 
 
 ---
